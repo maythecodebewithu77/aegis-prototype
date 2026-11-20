@@ -1,0 +1,53 @@
+{
+  "components": [
+    {
+      "component_id": "COMP-BATT-01",
+      "name": "Lithium battery cell",
+      "tier1_suppliers": [
+        {
+          "supplier_id": "T1-VOLTX",
+          "name": "VoltX Assemblies Pvt Ltd",
+          "region": "Chennai, IN",
+          "tier2_suppliers": [
+            {"supplier_id": "T2-LICORE", "name": "LiCore Materials", "region": "Shenzhen, CN", "share_pct": 65},
+            {"supplier_id": "T2-CELLPWR", "name": "CellPower Refining", "region": "Jiangsu, CN", "share_pct": 35}
+          ]
+        }
+      ]
+    },
+    {
+      "component_id": "COMP-CHIP-07",
+      "name": "MCU controller chip",
+      "tier1_suppliers": [
+        {
+          "supplier_id": "T1-CIRCON",
+          "name": "Circon Electronics",
+          "region": "Bengaluru, IN",
+          "tier2_suppliers": [
+            {"supplier_id": "T2-WAFERONE", "name": "WaferOne Fab", "region": "Hsinchu, TW", "share_pct": 80},
+            {"supplier_id": "T2-SILNODE", "name": "SilNode Foundry", "region": "Penang, MY", "share_pct": 20}
+          ]
+        }
+      ]
+    },
+    {
+      "component_id": "COMP-COOL-03",
+      "name": "Cold-chain refrigerant unit",
+      "tier1_suppliers": [
+        {
+          "supplier_id": "T1-CHILLCO",
+          "name": "ChillCo Systems",
+          "region": "Pune, IN",
+          "tier2_suppliers": [
+            {"supplier_id": "T2-FREONWORKS", "name": "FreonWorks Ltd", "region": "Gujarat, IN", "share_pct": 55},
+            {"supplier_id": "T2-COOLRAW", "name": "CoolRaw Chemicals", "region": "Ningbo, CN", "share_pct": 45}
+          ]
+        }
+      ]
+    }
+  ],
+  "disruption_signals": [
+    {"supplier_id": "T2-LICORE", "signal": "port_congestion", "severity": "high", "detected_days_ago": 1},
+    {"supplier_id": "T2-WAFERONE", "signal": "factory_maintenance_shutdown", "severity": "medium", "detected_days_ago": 3}
+  ]
+}

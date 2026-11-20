@@ -1,0 +1,41 @@
+{
+  "routes": [
+    {
+      "route_id": "RT-SEA-01",
+      "mode": "sea",
+      "path": ["Shenzhen Port", "Colombo Transship", "Chennai Port"],
+      "normal_hours": 96
+    },
+    {
+      "route_id": "RT-AIR-02",
+      "mode": "air",
+      "path": ["Hsinchu", "Singapore Hub", "Bengaluru"],
+      "normal_hours": 30
+    },
+    {
+      "route_id": "RT-ROAD-07",
+      "mode": "road",
+      "path": ["Krishnagiri", "NH-44", "Chennai Port"],
+      "normal_hours": 18
+    },
+    {
+      "route_id": "RT-ROAD-07-ALT",
+      "mode": "road",
+      "path": ["Krishnagiri", "SH-9 (bypass)", "Chennai Port"],
+      "normal_hours": 23
+    }
+  ],
+  "disruption_events": [
+    {
+      "route_id": "RT-ROAD-07",
+      "type": "flood_closure",
+      "segment": "NH-44",
+      "severity": "high",
+      "delay_hours": 30,
+      "detected_minutes_ago": 12
+    }
+  ],
+  "alternates": {
+    "RT-ROAD-07": ["RT-ROAD-07-ALT"]
+  }
+}

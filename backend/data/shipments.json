@@ -1,0 +1,32 @@
+[
+  {
+    "shipment_id": "SHP-1001",
+    "component_id": "COMP-BATT-01",
+    "description": "EV battery cell restock for Chennai assembly line",
+    "origin": "Shenzhen, CN",
+    "destination": "Chennai, IN",
+    "route_id": "RT-SEA-01",
+    "perishability_hours": null,
+    "eta_hours": 96
+  },
+  {
+    "shipment_id": "SHP-1002",
+    "component_id": "COMP-CHIP-07",
+    "description": "MCU chips for robotics controller batch",
+    "origin": "Hsinchu, TW",
+    "destination": "Bengaluru, IN",
+    "route_id": "RT-AIR-02",
+    "perishability_hours": null,
+    "eta_hours": 30
+  },
+  {
+    "shipment_id": "SHP-2001",
+    "component_id": "COMP-COOL-03",
+    "description": "Mango export consignment, tier-2 city cooperative",
+    "origin": "Krishnagiri, IN",
+    "destination": "Chennai Port, IN",
+    "route_id": "RT-ROAD-07",
+    "perishability_hours": 36,
+    "eta_hours": 18
+  }
+]

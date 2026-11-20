@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AEGIS — Nexus Polaris</title>
+<style>
+  :root {
+    --primary: #065A82; --second: #1C7293; --dark: #21295C;
+    --accent: #F2A65A; --light: #F4F8FA; --text: #1B1F2A; --muted: #5B6472;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, Calibri, Arial, sans-serif; background: var(--light); color: var(--text); }
+  header { background: var(--dark); color: #fff; padding: 20px 28px; display:flex; align-items:center; justify-content:space-between; }
+  header h1 { margin:0; font-size: 22px; }
+  header .tag { color: #AFC6D8; font-size: 12px; }
+  header .team { text-align:right; font-size: 12px; color: var(--accent); }
+  main { display:grid; grid-template-columns: 1.1fr 1fr; gap: 20px; padding: 20px 28px; }
+  section.card { background:#fff; border:1px solid #DCE6EA; border-radius:10px; padding:18px 20px; margin-bottom:20px; }
+  h2 { font-size:15px; text-transform:uppercase; letter-spacing:0.03em; color: var(--primary); margin-top:0; }
+  .shipment { border:1px solid #DCE6EA; border-radius:8px; padding:12px 14px; margin-bottom:10px; cursor:pointer; transition: box-shadow .15s; }
+  .shipment:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .shipment.active { border-color: var(--primary); background: #EFF6FA; }
+  .badge { display:inline-block; padding:2px 9px; border-radius:12px; font-size:11px; font-weight:600; color:#fff; }
+  .badge.LOW, .badge.ON_TRACK { background:#3B9E6E; }
+  .badge.MEDIUM, .badge.DELAYED { background: var(--accent); color:#332200; }
+  .badge.HIGH, .badge.AT_RISK { background:#C64545; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .pillar-block { border-left:4px solid var(--second); padding:10px 14px; margin-bottom:12px; background:#FAFCFD; border-radius:0 6px 6px 0; }
+  .pillar-block h3 { margin:0 0 6px; font-size:13px; color: var(--dark); }
+  .pillar-block p { margin:4px 0; font-size:13px; }
+  button { border:none; border-radius:6px; padding:7px 14px; font-size:13px; cursor:pointer; font-weight:600; }
+  button.approve { background: var(--primary); color:#fff; margin-right:8px; }
+  button.reject { background:#eee; color:#555; }
+  button:disabled { opacity:0.45; cursor:default; }
+  table { width:100%; border-collapse: collapse; font-size:12.5px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid #EEE; }
+  th { color: var(--muted); font-weight:600; }
+  .decision-approved { color:#2E8B57; font-weight:600; }
+  .decision-rejected { color:#C64545; font-weight:600; }
+  .empty { color: var(--muted); font-size:13px; font-style:italic; }
+  .findings-list { font-size:12.5px; margin: 4px 0 0 18px; padding:0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>AEGIS</h1>
+    <div class="tag">Autonomous Ecosystem for Guarding Industrial Supply chains — SENSE · ADAPT · RECOVER</div>
+  </div>
+  <div class="team">Team Nexus Polaris<br/>HS26-112</div>
+</header>
+
+<main>
+  <div>
+    <section class="card">
+      <h2>Shipments</h2>
+      <div id="shipment-list"></div>
+    </section>
+
+    <section class="card">
+      <h2>Compliance &amp; Human-in-the-Loop — Audit Log</h2>
+      <div id="audit-log"></div>
+    </section>
+  </div>
+
+  <div>
+    <section class="card">
+      <h2>Agent Findings</h2>
+      <div id="agent-panel">
+        <p class="empty">Select a shipment to run SENSE, ADAPT, and RECOVER against it.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+const API = "http://127.0.0.1:8000";
+let shipments = [];
+let activeShipment = null;
+
+async function loadShipments() {
+  const res = await fetch(`${API}/api/shipments`);
+  shipments = await res.json();
+  renderShipmentList();
+}
+
+function renderShipmentList() {
+  const el = document.getElementById("shipment-list");
+  el.innerHTML = shipments.map(s => `
+    <div class="shipment ${activeShipment === s.shipment_id ? 'active' : ''}" onclick="selectShipment('${s.shipment_id}')">
+      <strong>${s.shipment_id}</strong> — ${s.description}<br/>
+      <span class="muted">${s.origin} → ${s.destination} · ETA ${s.eta_hours}h${s.perishability_hours ? ` · perishable in ${s.perishability_hours}h` : ""}</span>
+    </div>
+  `).join("");
+}
+
+async function selectShipment(id) {
+  activeShipment = id;
+  renderShipmentList();
+  const shipment = shipments.find(s => s.shipment_id === id);
+  const panel = document.getElementById("agent-panel");
+  panel.innerHTML = `<p class="empty">Running SENSE, ADAPT and RECOVER…</p>`;
+
+  const [senseRes, adaptRes, recoverRes] = await Promise.all([
+    fetch(`${API}/api/sense/${shipment.component_id}`).then(r => r.json()),
+    fetch(`${API}/api/adapt/${shipment.shipment_id}`).then(r => r.json()),
+    fetch(`${API}/api/recover/${shipment.component_id}`).then(r => r.json()),
+  ]);
+
+  panel.innerHTML = renderSense(senseRes) + renderAdapt(adaptRes, shipment) + renderRecover(recoverRes);
+  loadAuditLog();
+}
+
+function renderSense(r) {
+  const findings = r.hidden_tier_findings.map(f => `<li>${f.tier2_supplier} (${f.tier2_region}) — ${f.concentration_pct}% share, ${f.risk_band} risk${f.active_disruption ? `, active: ${f.active_disruption.signal.replace(/_/g," ")}` : ""}</li>`).join("");
+  return `
+    <div class="pillar-block">
+      <h3>SENSE — ${r.component_name} <span class="badge ${r.overall_risk_band}">${r.overall_risk_band} · ${r.overall_risk_score}/100</span></h3>
+      <ul class="findings-list">${findings}</ul>
+      <p class="muted">${r.agent_explanation}</p>
+    </div>`;
+}
+
+function renderAdapt(r, shipment) {
+  const key = `adapt:${shipment.shipment_id}`;
+  let actionHtml = "";
+  if (r.proposed_action) {
+    actionHtml = `
+      <p><strong>Proposed:</strong> reroute via ${r.proposed_action.new_path.join(" → ")} (new ETA ${r.proposed_action.new_eta_hours}h)</p>
+      <button class="approve" onclick="approve('${key}', true)">Approve reroute</button>
+      <button class="reject" onclick="approve('${key}', false)">Reject</button>`;
+  }
+  return `
+    <div class="pillar-block">
+      <h3>ADAPT — Route ${r.route ? r.route.route_id : ""} <span class="badge ${r.status}">${r.status.replace("_"," ")}</span></h3>
+      <p class="muted">${r.agent_explanation}</p>
+      ${actionHtml}
+    </div>`;
+}
+
+function renderRecover(r) {
+  const key = `recover:${r.component_id}`;
+  let actionHtml = "";
+  if (r.recommended_match) {
+    const m = r.recommended_match;
+    actionHtml = `
+      <p><strong>Recommended:</strong> ${m.quantity} units from ${m.source} (${m.distance_km}km, ${m.condition})</p>
+      <button class="approve" onclick="approve('${key}', true)">Approve sourcing</button>
+      <button class="reject" onclick="approve('${key}', false)">Reject</button>`;
+  } else {
+    actionHtml = `<p class="empty">No recoverable substitutes found.</p>`;
+  }
+  return `
+    <div class="pillar-block">
+      <h3>RECOVER — ${r.component_name}</h3>
+      <p class="muted">${r.agent_explanation}</p>
+      ${actionHtml}
+    </div>`;
+}
+
+async function approve(actionKey, isApprove) {
+  await fetch(`${API}/api/approve`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action_key: actionKey,
+      decision: isApprove ? "approved" : "rejected",
+      approver_name: "Demo Officer",
+      note: isApprove ? "Approved via dashboard" : "Rejected via dashboard",
+    }),
+  });
+  loadAuditLog();
+  event.target.closest(".pillar-block").querySelectorAll("button").forEach(b => b.disabled = true);
+}
+
+async function loadAuditLog() {
+  const res = await fetch(`${API}/api/audit`);
+  const log = await res.json();
+  const el = document.getElementById("audit-log");
+  if (!log.length) {
+    el.innerHTML = `<p class="empty">No decisions logged yet.</p>`;
+    return;
+  }
+  el.innerHTML = `
+    <table>
+      <thead><tr><th>Time</th><th>Pillar</th><th>Subject</th><th>Decision</th><th>Approver</th></tr></thead>
+      <tbody>
+        ${log.map(l => `
+          <tr>
+            <td>${l.timestamp.split(" ")[1]}</td>
+            <td>${l.pillar}</td>
+            <td>${l.subject}</td>
+            <td class="decision-${l.decision}">${l.decision}</td>
+            <td>${l.approver_name}</td>
+          </tr>`).join("")}
+      </tbody>
+    </table>`;
+}
+
+loadShipments();
+loadAuditLog();
+</script>
+</body>
+</html>

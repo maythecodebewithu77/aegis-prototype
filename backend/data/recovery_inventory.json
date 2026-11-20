@@ -1,0 +1,20 @@
+[
+  {
+    "item_id": "REC-CHIP-14",
+    "component_id": "COMP-CHIP-07",
+    "source": "Regional e-waste recovery hub, Hosur",
+    "condition": "Tested, grade A (95% capacity)",
+    "certification": "IPC-1752A recovered-parts certified",
+    "quantity": 480,
+    "distance_km": 62
+  },
+  {
+    "item_id": "REC-BATT-05",
+    "component_id": "COMP-BATT-01",
+    "source": "Returned-goods reconditioning center, Sriperumbudur",
+    "condition": "Refurbished, grade B (82% capacity)",
+    "certification": "BIS-compliant refurbishment",
+    "quantity": 120,
+    "distance_km": 41
+  }
+]
