@@ -206,5 +206,4 @@ $env:ANTHROPIC_API_KEY="sk-ant-api..."       # Windows PowerShell
 ## 👥 Team & Hackathon Context
 
 - **Team**: Nexus Polaris
-- **Track / ID**: HS26-112
 - **Focus**: Intelligent Supply Chain Resilience, Autonomous Explainable AI, Circular Logistics
